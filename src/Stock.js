@@ -7,6 +7,10 @@ class Stock {
       this.promoStartDate = promoStartDate; // 프로모션 시작일
       this.promoEndDate = promoEndDate; // 프로모션 종료일
     }
+
+    reduceQuantity(count){
+        this.quantity -= count;
+    }
 }
 
 export default Stock;

@@ -2,11 +2,13 @@ import { Console } from "@woowacourse/mission-utils";
 import OutputView from "./OutputView.js";
 import InputView from "./InputView.js";
 import Stock from "./Stock.js";
+import StockManager from "./StockManager.js";
+
 
 class App {
   constructor(){
-    this.addProductList = [];
     this.initializeStock();
+    this.addProductList = StockManager.AllStocks;
   }
 
   async run() {
@@ -15,12 +17,27 @@ class App {
     let promoDiscount = 0;
     let membershipDiscount = 0;
     let finalAmount = 0;
+    this.addProductList = StockManager.AllStocks
 
     //출력1 : 상품 목록 출력 
     await OutputView.printProducts(this.addProductList);
 
     //입력1 : 구매 상품 입력 
     const items = await this.readItem(); //배열 [ { name: '사이다', count: 2 }, { name: '감자칩', count: 1 } ]
+
+    //재고 관리1 : 재고 확인, 업데이트 가능여부 확인, 재고 업데이트 (프로모션 무시)
+    for(let stock of StockManager.AllStocks){
+      for (let item of items){
+        if(stock.name == item.name){
+          if(!StockManager.noStock(stock)){
+            if(!StockManager.updateImpossible(stock,item.count)){
+              stock.reduceQuantity(item.count);
+            }
+          }
+        }
+      }
+    }
+
     //입력2 : 멤버십 할인 적용 여부 입력 
     const membership = await this.membershipSelect();
 
@@ -90,7 +107,7 @@ class App {
   async membershipSelect() {
     try {
       const input = await InputView.askMembership();
-      if (input == 'Y' && input == 'N') {
+      if (input !== 'Y' && input !== 'N') {
         throw new Error("[ERROR] Y/N로 입력해주세요.");
       }
       return input;
@@ -103,7 +120,7 @@ class App {
   async promoSelect() {
     try {
       const input = await InputView.askPromotionAdd();
-      if (input == 'Y' && input == 'N') {
+      if (input !== 'Y' && input !== 'N') {
         throw new Error("[ERROR] Y/N로 입력해주세요.");
       }
       return input;
@@ -116,7 +133,7 @@ class App {
   async whenNoPromoSelect() {
     try {
       const input = await InputView.askPromotionQuit();
-      if (input == 'Y' && input == 'N') {
+      if (input !== 'Y' && input !== 'N') {
         throw new Error("[ERROR] Y/N로 입력해주세요.");
       }
       return input;
@@ -127,25 +144,24 @@ class App {
   }
 
   initializeStock(){
-    this.addProductList.push((new Stock("콜라", 1000, 10, "탄산2+1", "2025-03-01", "2025-03-10")));
-    this.addProductList.push((new Stock("콜라", 1000, 10, "2025-03-01", "2025-03-10")));
-    this.addProductList.push((new Stock("사이다", 1000, 8, "탄산2+1", "2025-03-01", "2025-03-10")));
-    this.addProductList.push((new Stock("사이다", 1000, 7, "2025-03-01", "2025-03-10")));
-    this.addProductList.push((new Stock("오렌지주스", 1800, 9, "MD추천상품", "","")));
-    this.addProductList.push((new Stock("오렌지주스", 1800, 0)));
-    this.addProductList.push((new Stock("탄산수", 1200, 5, "탄산2+1", "2025-03-01", "2025-03-10")));
-    this.addProductList.push((new Stock("탄산수", 1200, 0)));
-    this.addProductList.push((new Stock("물", 500, 10)));
-    this.addProductList.push((new Stock("비타민워터", 1500, 6)));
-    this.addProductList.push((new Stock("감자칩", 1500, 5, "반짝할인", "", "")));
-    this.addProductList.push((new Stock("감자칩", 1500, 5)));
-    this.addProductList.push((new Stock("초코바", 1200, 5, "MD추천상품", "","")));
-    this.addProductList.push((new Stock("초코바", 1200, 5)));
-    this.addProductList.push((new Stock("에너지바", 2000, 5)));
-    this.addProductList.push((new Stock("정식도시락", 6400, 8)));
-    this.addProductList.push((new Stock("컵라면", 1700, 1, "MD추천상품", "","")));
-    this.addProductList.push((new Stock("컵라면", 1700, 10)));
-    Console.print(this.addProduct);
+    StockManager.addProduct((new Stock("콜라", 1000, 10, "탄산2+1", "2025-03-01", "2025-03-10")));
+    StockManager.addProduct((new Stock("콜라", 1000, 10, "2025-03-01", "2025-03-10")));
+    StockManager.addProduct((new Stock("사이다", 1000, 8, "탄산2+1", "2025-03-01", "2025-03-10")));
+    StockManager.addProduct((new Stock("사이다", 1000, 7, "2025-03-01", "2025-03-10")));
+    StockManager.addProduct((new Stock("오렌지주스", 1800, 9, "MD추천상품", "","")));
+    StockManager.addProduct((new Stock("오렌지주스", 1800, 0)));
+    StockManager.addProduct((new Stock("탄산수", 1200, 5, "탄산2+1", "2025-03-01", "2025-03-10")));
+    StockManager.addProduct((new Stock("탄산수", 1200, 0)));
+    StockManager.addProduct((new Stock("물", 500, 10)));
+    StockManager.addProduct((new Stock("비타민워터", 1500, 6)));
+    StockManager.addProduct((new Stock("감자칩", 1500, 5, "반짝할인", "", "")));
+    StockManager.addProduct((new Stock("감자칩", 1500, 5)));
+    StockManager.addProduct((new Stock("초코바", 1200, 5, "MD추천상품", "","")));
+    StockManager.addProduct((new Stock("초코바", 1200, 5)));
+    StockManager.addProduct((new Stock("에너지바", 2000, 5)));
+    StockManager.addProduct((new Stock("정식도시락", 6400, 8)));
+    StockManager.addProduct((new Stock("컵라면", 1700, 1, "MD추천상품", "","")));
+    StockManager.addProduct((new Stock("컵라면", 1700, 10)));
   }
 }
 
